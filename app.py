@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import load_model
+# import load_model
 import pickle
 from datetime import date, timedelta
 
