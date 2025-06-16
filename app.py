@@ -10,8 +10,22 @@ def load_model_keras():
     model = load_model("./Models/Pol_Bmkg_Hybrid_Model_40.keras")
     return model
 
+def get_pm25_level(value):
+    if value <= 50:
+        return "Baik"
+    elif value <= 100:
+        return "Sedang"
+    elif value <= 199:
+        return "Tidak Sehat"
+    elif value <= 299:
+        return "Sangat Tidak Sehat"
+    elif value <= 500:
+        return "Berbahaya"
+    else:
+        return "Di luar jangkauan"
+
 # Set the layout
-st.set_page_config(page_title="PM2.5 Prediction", layout="wide")
+st.set_page_config(page_title="Prediksi PM2.5", layout="wide")
 
 # --- Custom CSS ---
 st.markdown("""
@@ -39,36 +53,38 @@ st.markdown("""
 
 # --- Session state for page navigation ---
 if "page" not in st.session_state:
-    st.session_state.page = "Main"
+    st.session_state.page = "Utama"
 
 # --- Sidebar ---
 with st.sidebar:
     st.markdown("### 📌 Menu")
     with st.container():
         st.markdown('<div class="sidebar-button">', unsafe_allow_html=True)
-        if st.button("🏠 Main"):
-            st.session_state.page = "Main"
-        if st.button("📊 Prediction"):
-            st.session_state.page = "Prediction"
+        if st.button("🏠 Utama"):
+            st.session_state.page = "Utama"
+        if st.button("📊 Prediksi"):
+            st.session_state.page = "Prediksi"
+        if st.button("📘 Tentang ISPU"):
+            st.session_state.page = "Tentang ISPU"
         st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # --- Conditional Instruction section ---
-    if st.session_state.page == "Prediction":
+    if st.session_state.page == "Prediksi":
         st.markdown('<div class="sidebar-section">', unsafe_allow_html=True)
-        st.markdown("### 🧾 Page Instruction")
+        st.markdown("### 🧾 Instruksi Halaman")
         st.markdown(
             """
             <div style="border: 1px solid gray; padding: 10px; border-radius: 5px;">
-            This page is used to predict PM2.5 index in Central Jakarta
+            Halaman ini digunakan untuk memprediksi indeks PM2.5 di Jakarta Pusat
             <br>
             <br>
 
-            Follow these steps to use this application:
+            Ikuti langkah-langkah berikut untuk menggunakan aplikasi ini:
             <ol>
-            <li>Insert PM2.5 index for the past 7 days (not including today's index)</li>
-            <li>Input no. 1 = 7th past day’s PM2.5, Input no. 2 = 6th past day’s PM2.5, etc.</li>
-            <li>Click “Predict” after filling in all the inputs</li>
+            <li>Masukkan indeks PM2.5 selama 7 hari terakhir (tidak termasuk hari ini)</li>
+            <li>Input no. 1 = PM2.5 pada hari ke-7 sebelumnya, Input no. 2 = PM2.5 pada hari ke-6 sebelumnya, dan seterusnya</li>
+            <li>Klik “Predict” setelah semua input terisi</li>
             </ol>
             </div>
             """,
@@ -76,28 +92,28 @@ with st.sidebar:
         )
 
 
+
 # --- Page content ---
-if st.session_state.page == "Main":
+if st.session_state.page == "Utama":
     st.markdown(
         """
         <div style="display: flex; justify-content: center; align-items: center; height: 90vh; text-align: center;">
             <div>
-                <h1>Predict PM2.5 In Central Jakarta</h1>
-                <p>A website that helps predict Central's Jakarta PM2.5 Index for 7 days ahead</p>
-            </div>
+                <h1>Prediksi Indeks PM2.5 Jakarta Pusat untuk 7 Hari Ke Depan</h1>
+                <p>Sebuah web yang membantu memprediksi indeks PM2.5 Jakarta Pusat untuk 7 hari ke depan</p>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-elif st.session_state.page == "Prediction":
-    st.markdown("<h2 style='text-align: center;'>Predict PM2.5 In Central Jakarta</h2>", unsafe_allow_html=True)
+elif st.session_state.page == "Prediksi":
+    st.markdown("<h2 style='text-align: center;'>Prediksi Indeks PM2.5 di Jakarta Pusat untuk 7 Hari Ke Depan</h2>", unsafe_allow_html=True)
     st.write("")  # spacing
 
     # --- Input form for 7 PM2.5 values ---
     pm_values = []
     for i in range(7, 0, -1):
-        val = st.number_input(f"PM2.5 input from {i} days ago", min_value=0, step=1, key=f"pm_{i}")
+        val = st.number_input(f"Input PM2.5 {i} hari lalu", min_value=0, step=1, key=f"pm_{i}")
         pm_values.append(val)
 
     pm_values = np.array(pm_values, dtype=np.float64)
@@ -129,7 +145,6 @@ elif st.session_state.page == "Prediction":
 
         # Scale the input data
         data_window_scaled = scaler_x.transform(data_window)
-
         data_window_scaled = data_window_scaled.reshape(1, 7, 13)
 
         # Load the model
@@ -139,4 +154,20 @@ elif st.session_state.page == "Prediction":
         pm_values_pred = scaler_y.inverse_transform(y_pred)
         pm_values_pred = pm_values_pred.round()
 
-        st.success(f"Predicted PM2.5 for the next 7 days: {pm_values_pred.flatten()}")
+        #  Display the prediction result
+        week_dates = [date.today() + timedelta(days=i) for i in range(0, 7)]
+
+        prediction_output = "Prediksi PM2.5 7 hari ke depan:\n\n"
+        for d, v in zip(week_dates, pm_values_pred.flatten()):
+            level = get_pm25_level(v)
+            prediction_output += f"{d.strftime('%A, %d %b %Y')} = {int(v)} ({level})\n\n"
+
+        st.success(prediction_output)
+        
+elif st.session_state.page == "Tentang ISPU":
+        
+        st.markdown("<h2 style='text-align: center;'>Tentang ISPU (Indeks Standar Pencemar Udara)</h2>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 2, 1])  # You can adjust 1-2-1 ratio if needed
+
+        with col2:
+            st.image("ISPU.png", caption="Kategori ISPU dan Dampaknya terhadap Kesehatan", use_container_width =True)
