@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from tensorflow.keras.models import load_model
 import pickle
+from datetime import date, timedelta
 
 # Set the layout
 st.set_page_config(page_title="PM2.5 Prediction", layout="wide")
@@ -94,5 +95,43 @@ elif st.session_state.page == "Prediction":
         val = st.number_input(f"PM2.5 input from {i} days ago", min_value=0, step=1, key=f"pm_{i}")
         pm_values.append(val)
 
+    pm_values = np.array(pm_values, dtype=np.float64)
+
     if st.button("Predict"):
-        st.success(f"Predicted PM2.5 from your inputs: {pm_values}")
+        data = pd.read_csv('./data_for_app.csv', sep=',')
+
+        data['tanggal'] = pd.to_datetime(data['tanggal'], format='%Y-%m-%d').dt.date
+        data.set_index('tanggal', inplace=True)
+
+        ### Start of original code for data_window
+        # # Get yesterday's date
+        # yesterday = date.today() - timedelta(days=1)
+
+        # # Get data from 7 days before yesterday up to yesterday (inclusive)
+        # start_date = yesterday - timedelta(days=6)
+        # data_window = data.loc[start_date:yesterday]
+        ### End of original code for data_window
+
+        ### Start of hardcoded date range
+        start = pd.to_datetime('2025-06-09').date()
+        end = pd.to_datetime('2025-06-15').date()
+        data_window = data.loc[start:end] 
+        ### End of hardcoded date range
+
+        data_window['pm25'] = pm_values
+        scaler_x = pickle.load(open("./Scaler/scaler_x.pkl", "rb"))
+        scaler_y = pickle.load(open("./Scaler/scaler_y.pkl", "rb"))
+
+        # Scale the input data
+        data_window_scaled = scaler_x.transform(data_window)
+
+        data_window_scaled = data_window_scaled.reshape(1, 7, 13)
+
+        # Load the model
+        model = load_model("./Models/Pol_Bmkg_Hybrid_Model_40.keras")
+
+        y_pred = model.predict(data_window_scaled)
+        pm_values_pred = scaler_y.inverse_transform(y_pred)
+        pm_values_pred = pm_values_pred.round()
+
+        st.success(f"Predicted PM2.5 for the next 7 days: {pm_values_pred.flatten()}")
