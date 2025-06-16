@@ -6,7 +6,7 @@ import pickle
 from datetime import date, timedelta
 
 @st.cache_resource
-def load_model():
+def load_model_keras():
     model = load_model("./Models/Pol_Bmkg_Hybrid_Model_40.keras")
     return model
 
@@ -133,7 +133,7 @@ elif st.session_state.page == "Prediction":
         data_window_scaled = data_window_scaled.reshape(1, 7, 13)
 
         # Load the model
-        model = load_model()
+        model = load_model_keras()
 
         y_pred = model.predict(data_window_scaled)
         pm_values_pred = scaler_y.inverse_transform(y_pred)
