@@ -62,10 +62,10 @@ with st.sidebar:
         st.markdown('<div class="sidebar-button">', unsafe_allow_html=True)
         if st.button("🏠 Utama"):
             st.session_state.page = "Utama"
-        if st.button("📊 Prediksi"):
-            st.session_state.page = "Prediksi"
         if st.button("📘 Tentang ISPU"):
             st.session_state.page = "Tentang ISPU"
+        if st.button("📊 Prediksi"):
+            st.session_state.page = "Prediksi"
         st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -100,11 +100,20 @@ if st.session_state.page == "Utama":
         <div style="display: flex; justify-content: center; align-items: center; height: 90vh; text-align: center;">
             <div>
                 <h1>Prediksi Indeks PM2.5 Jakarta Pusat untuk 7 Hari Ke Depan</h1>
-                <p>Sebuah web yang membantu memprediksi indeks PM2.5 Jakarta Pusat untuk 7 hari ke depan</p>
+                <p>Sebuah web yang membantu memprediksi indeks PM2.5 Jakarta Pusat untuk 7 hari ke depan.</p>
         </div>
         """,
         unsafe_allow_html=True
     )
+
+elif st.session_state.page == "Tentang ISPU":
+        
+        st.markdown("<h2 style='text-align: center;'>Tentang ISPU (Indeks Standar Pencemar Udara)</h2>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 2, 1])  # You can adjust 1-2-1 ratio if needed
+
+        with col2:
+            st.image("ISPU.png", caption="Kategori ISPU dan Dampaknya terhadap Kesehatan", use_container_width =True)
+
 
 elif st.session_state.page == "Prediksi":
     st.markdown("<h2 style='text-align: center;'>Prediksi Indeks PM2.5 di Jakarta Pusat untuk 7 Hari Ke Depan</h2>", unsafe_allow_html=True)
@@ -164,10 +173,3 @@ elif st.session_state.page == "Prediksi":
 
         st.success(prediction_output)
         
-elif st.session_state.page == "Tentang ISPU":
-        
-        st.markdown("<h2 style='text-align: center;'>Tentang ISPU (Indeks Standar Pencemar Udara)</h2>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1, 2, 1])  # You can adjust 1-2-1 ratio if needed
-
-        with col2:
-            st.image("ISPU.png", caption="Kategori ISPU dan Dampaknya terhadap Kesehatan", use_container_width =True)
