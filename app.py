@@ -143,8 +143,8 @@ elif st.session_state.page == "Prediksi":
         ### End of original code for data_window
 
         ### Start of hardcoded date range
-        start = pd.to_datetime('2025-06-09').date()
-        end = pd.to_datetime('2025-06-15').date()
+        start = pd.to_datetime('2025-06-30').date()
+        end = pd.to_datetime('2025-07-06').date()
         data_window = data.loc[start:end] 
         ### End of hardcoded date range
 
